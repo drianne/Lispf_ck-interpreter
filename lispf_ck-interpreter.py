@@ -84,47 +84,52 @@ def constructor(program):
     print(tree)
 
     #printing result of interpretation
-    print("\nResult: \n")
+    print("\n\nResult: \n")
     value = eval(tree, ptr)
 
     print(value)
 
-
-
 def eval(ast, ptr):
 
+    #Running ast nodes
     for node in ast:
-        if isinstance(node, tuple):
-            if node[0] == 'add':
-                tape[ptr] = (tape[ptr] + int(node[1])) % 256
-            elif node[0] == 'sub':
-                tape[ptr] = (tape[ptr] - int(node[1])) % 256
-            elif node == 'inc':
-                tape[ptr] = (tape[ptr] + 1) % 256
-            elif node == 'dec':
-                tape[ptr] = (tape[ptr] - 1) % 256
-            elif node == 'right':
-                ptr += 1
-                if ptr == len(tape):
-                    tape.append(0)
-            elif node == 'left':
-                ptr -= 1
-            elif node == 'print':
-                print(chr(tape[ptr]), end='')
-            elif node == 'read':
-                data[ptr] = ord(getche())
-            elif node[0] == 'loop':
-                if tape[ptr]!= 0:
-                    i = 1
-                    while i < len(node):
-                        eval(node,ptr)
-                        i = i + 1
-                        if tape[ptr] == 0:
-                            break
-            elif node[0] == 'do-after':
-                ...
-            elif node[0] == 'do-before':
-                ...
+        #Catching node tuples
+
+        #Defining actions in tape
+        if node[0] == 'add':
+            tape[ptr] = (tape[ptr] + int(node[1])) % 256
+        elif node[0] == 'sub':
+            tape[ptr] = (tape[ptr] - int(node[1])) % 256
+        elif node == 'inc':
+            tape[ptr] = (tape[ptr] + 1) % 256
+        elif node == 'dec':
+            tape[ptr] = (tape[ptr] - 1) % 256
+        elif node == 'right':
+            ptr += 1
+            if ptr == len(tape):
+                tape.append(0)
+        elif node == 'left':
+            ptr -= 1
+        elif node == 'print':
+            print(chr(tape[ptr]), end='')
+        elif node == 'read':
+            data[ptr] = ord(getche())
+        elif node[0] == 'loop':
+            if tape[ptr]!= 0:
+                i = 1
+                while i < len(node):
+                    eval(node,ptr)
+                    i = i + 1
+                    if tape[ptr] == 0:
+                        break
+        elif node[0] == 'do-after':
+            _,cmd,command_list = node
+            expansion = ['do']
+            for command in command_list:
+                expansion.extend([command, cmd])
+            eval(tuple(expansion), ptr)
+        elif node[0] == 'do-before':
+            ...
     return tape
 
 if __name__ == '__main__':
