@@ -1,9 +1,9 @@
 import ox
 import click
+import getch
 
 #making lexer
-
-lexer = ox.make_lexer([        
+lexer = ox.make_lexer([
     ('NUMBER', r'\d+'),
     ('NAME', r'[-a-zA-Z]+'),
     ('COMMENT', r';.*'),
@@ -21,7 +21,7 @@ lexer = ox.make_lexer([
     ('LOOP', r'loop'),
     ('DEF', r'def'),
     ('PARENTHESIS_B', r'\('),
-    ('PARENTHESIS_A', r'\)')        
+    ('PARENTHESIS_A', r'\)')
 ])
 
 #Seting tokens
@@ -53,39 +53,79 @@ parser = ox.make_parser([
     ('operator : NUMBER', operator),
 ], tokens)
 
-#import operator as op
-#operations = {'inc': op.add, 'dec': op.sub}
+#Defining tape of lispf_ck and necessary pointers
+tape = [0]
+ptr = 0
+breakpoints = []
 
-#def eval(ast):
- #   head, *tail = ast
-  #  if head == 'atom':
-   #     return tail[0]
-    #else:
-     #   func = operations[head]
-      #  args = (eval(x) for x in tail)
-       # return func(*args)
-
-
-
-#enter the file
+#Enter the file
 @click.command()
-@click.argument('source', type=click.File('r'))
+@click.argument('program', type=click.File('r'))
 
-def eval_loop(source):
-    program = source.read()
+#Constructor
+def constructor(program):
+    #Reading the program
+    source = program.read()
 
-    tokens = lexer(program)
+    print("\nSource Code : ")
+    print(source)
 
-     #removing comments and spaces of tokens to make the tree
+    #Geting tokens of source code
+    tokens = lexer(source)
+    print("\nTokens:\n ")
+    print(tokens)
+
+    #Removing comments and spaces of tokens to make the tree
     parser_tokens = [token for token in tokens if token.type != 'COMMENT' and token.type != 'SPACE']
 
+    #Generating tree
     tree = parser(parser_tokens)
-
+    print("\nTree : \n")
     print(tree)
 
-    #value = eval(tree)
+    #printing result of interpretation
+    print("\nResult: \n")
+    value = eval(tree, ptr)
 
-    #print('result:', value)
+    print(value)
+
+
+
+def eval(ast, ptr):
+
+    for node in ast:
+        if isinstance(node, tuple):
+            if node[0] == 'add':
+                tape[ptr] = (tape[ptr] + int(node[1])) % 256
+            elif node[0] == 'sub':
+                tape[ptr] = (tape[ptr] - int(node[1])) % 256
+            elif node == 'inc':
+                tape[ptr] = (tape[ptr] + 1) % 256
+            elif node == 'dec':
+                tape[ptr] = (tape[ptr] - 1) % 256
+            elif node == 'right':
+                ptr += 1
+                if ptr == len(tape):
+                    tape.append(0)
+            elif node == 'left':
+                ptr -= 1
+            elif node == 'print':
+                print(chr(tape[ptr]), end='')
+            elif node == 'read':
+                data[ptr] = ord(getche())
+            elif node[0] == 'loop':
+                if tape[ptr]!= 0:
+                    i = 1
+                    while i < len(node):
+                        eval(node,ptr)
+                        i = i + 1
+                        if tape[ptr] == 0:
+                            break
+            elif node[0] == 'do-after':
+                ...
+            elif node[0] == 'do-before':
+                ...
+    return tape
 
 if __name__ == '__main__':
-   eval_loop()
+   constructor()
