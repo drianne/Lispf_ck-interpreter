@@ -93,7 +93,6 @@ def eval(ast, ptr):
 
     #Running ast nodes
     for node in ast:
-        #Catching node tuples
 
         #Defining actions in tape
         if node[0] == 'add':
@@ -129,7 +128,11 @@ def eval(ast, ptr):
                 expansion.extend([command, cmd])
             eval(tuple(expansion), ptr)
         elif node[0] == 'do-before':
-            ...
+            _,cmd,command_list = node
+            expansion = ['do']
+            for command in command_list:
+                expansion.extend([cmd, command])
+            eval(tuple(expansion), ptr)
     return tape
 
 if __name__ == '__main__':
